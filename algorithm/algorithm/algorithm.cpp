@@ -2,44 +2,28 @@
 #include<stdio.h>
 using namespace std;
 
-int BinarySearch(int arr[], int len, int target) {
-	int first = 0;
-	int last = len - 1;
-	int mid = 0;
+int InterpolationSearch(int arr[], int len, int target)
+{
 
-    while (first <= last) {
-        mid = (first + last) / 2;
-        if (arr[mid] == target) {
-            return mid;
-        }
-        else {
-            if (arr[mid] > target)
-                last = mid - 1;
-            else
-                first = mid + 1;
-        }
+    int low = 0, high = (len - 1);
+    int pos = 0;
+
+    while (arr[low] != arr[high] && target >= arr[low] && target <= arr[high])
+    {
+        pos = low + (target - arr[low]) * (high - low) / (arr[high] - arr[low]);
+
+        if (arr[pos] == target)
+            return pos;
+        else if (arr[pos] > target)
+            high = pos - 1;
+        else
+            low = pos + 1;
     }
-    return -1;
-}
 
-int BinarySearchRecur(int arr[], int first, int last, int target) {
-    int mid = (first + last) / 2;
-    if (first > last)
+    if (target == arr[low])
+        return low;
+    else
         return -1;
-    else {
-        if (arr[mid] == target)
-            return mid;
-        else {
-            if (arr[mid] > target) {
-                last = mid - 1;
-                BinarySearchRecur(arr, first, last, target);
-            }
-            else {
-                first = mid + 1;
-                BinarySearchRecur(arr, first, last, target);
-            }
-        }
-    }
 }
 
 int main()
@@ -51,7 +35,7 @@ int main()
     printf("input number : ");
     scanf_s("%d", &inputTarget);
 
-    index = BinarySearch(arr, sizeof(arr), inputTarget);
+    index = InterpolationSearch(arr, sizeof(arr), inputTarget);
     if (index == -1) printf("Fail");
     else {
         printf("arr[] target index : %d", index);
