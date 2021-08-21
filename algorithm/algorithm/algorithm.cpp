@@ -1,77 +1,116 @@
 ﻿#include <iostream>
-#include <vector>
-
+#include <string>
+#include <unordered_set>
 using namespace std;
 
-const int MAX_V = 100;
-const int INF = 987654321;
+typedef __int64 bigint;
 
-int V = 6;
+int HashFunction(string str)
+{
+	bigint hashValue = 0;
 
-vector<pair<int, int> > adj[MAX_V];
+	for (int i = 0; i < str.length(); i++)
+		hashValue += str[i] * pow(101.0, str.length() - 1 - i);
 
-int prim(vector<pair<int, int> > &selected) {
-	selected.clear();
-
-	vector<bool> added(V, false);
-	vector<int> minWeight(V, INF), parent(V, -1);
-
-	int ret = 0;
-	minWeight[0] = parent[0] = 0;
-	for (int iter = 0; iter < V; iter++) {
-		int u = -1;
-		for (int v = 0; v < V; v++) {
-			if (!added[v] && (u == -1 || minWeight[u] > minWeight[v]))
-				u = v;
-		}
-
-		if (parent[u] != u)
-			selected.push_back(make_pair(parent[u], u));
-
-		ret += minWeight[u];
-		added[u] = true;
-
-		for (int i = 0; i < adj[u].size(); i++) {
-			int v = adj[u][i].first, weight = adj[u][i].second;
-			if (!added[v] && minWeight[v] > weight) {
-				parent[v] = u;
-				minWeight[v] = weight;
-			}
-		}
-	}
-	return ret;
+	return hashValue % 101;
 }
 
-int main() {
-	adj[0].push_back(make_pair(1, 5));
-	adj[1].push_back(make_pair(0, 5));
+int HashFunction(string str, bigint& hashValue)
+{
+	for (int i = 0; i < str.length(); i++)
+		hashValue += str[i] * pow(101.0, str.length() - 1 - i);
 
-	adj[1].push_back(make_pair(2, 3));
-	adj[2].push_back(make_pair(1, 3));
+	return hashValue % 101;
+}
 
-	adj[2].push_back(make_pair(3, 4));
-	adj[3].push_back(make_pair(2, 4));
+int RollingHashFunction(bigint& hashValue, int oldChar, int newChar, int patternLength)
+{
+	hashValue = (hashValue - (oldChar * pow(101.0, patternLength - 1))) * 101 + newChar;
 
-	adj[1].push_back(make_pair(4, 3));
-	adj[4].push_back(make_pair(1, 3));
+	return hashValue % 101;
+}
 
-	adj[0].push_back(make_pair(3, 7));
-	adj[3].push_back(make_pair(0, 7));
+bool RabinKarp(string text, string pattern)
+{
+	bool result = false;
 
-	adj[2].push_back(make_pair(4, 2));
-	adj[4].push_back(make_pair(2, 2));
+	int patternResult = HashFunction(pattern);
+	bigint hashValue = 0;
+	int textResult = HashFunction(text.substr(0, pattern.length()), hashValue);
 
-	adj[3].push_back(make_pair(5, 1));
-	adj[5].push_back(make_pair(3, 1));
+	for (int i = 0; i < text.length() - pattern.length() + 1; i++)
+	{
+		if (textResult == patternResult)
+		{
+			if (text.substr(i, pattern.length()) == pattern)
+			{
+				cout << "Found " << text.substr(i, pattern.length()) << " in " << i << " Index." << endl;
+				result = true;
+			}
+		}
 
-	adj[4].push_back(make_pair(5, 4));
-	adj[5].push_back(make_pair(4, 4));
-
-	vector<pair<int, int> > selected;
-	int mst = prim(selected);
-	printf("mst:%d\n", mst);
-	for (int i = 0; i < selected.size(); i++) {
-		printf("%d-%d\n", selected[i].first, selected[i].second);
+		textResult = RollingHashFunction(hashValue, text[i], text[i + pattern.length()], pattern.length());
 	}
-	printf("\n");
+
+	return result;
+}
+
+bool RabinKarp(string text, unordered_set<string> stringSet, int maxLength)
+{
+	bool result = false;
+
+	unordered_set<int> hashSet;
+	for (auto& str : stringSet)
+		hashSet.insert(HashFunction(str));
+
+	bigint hashValue = 0;
+	int textResult = HashFunction(text.substr(0, maxLength), hashValue);
+
+	for (int i = 0; i < text.length() - maxLength; i++)
+	{
+		if (hashSet.count(textResult))
+		{
+			unordered_set<string>::iterator it = stringSet.find(text.substr(i, maxLength));
+			if (it != stringSet.end())
+			{
+				cout << "Found " << text.substr(i, maxLength) << " in " << i << " Index." << endl;
+				result = true;
+			}
+		}
+
+		textResult = RollingHashFunction(hashValue, text[i], text[i + maxLength], maxLength);
+	}
+
+	return result;
+}
+
+int main()
+{
+	string text = "Rabin-Karp algorithm From Wikipedia, the free encyclopedia\n"
+		"In computer science, the Rabin-Karp algorithm or Karp-Rabin algorithm\n"
+		"is a string searching algorithm created by Richard M. Karp and Michael O.\n"
+		"Rabin (1987) that uses hashing to find any one of a set of pattern strings in a text.\n"
+		"For text of length n and p patterns of combined length m,\nits average and best case running time is O(n+m) in space O(p),\n"
+		"but its worst-case time is O(nm).\n"
+		"In contrast, the Aho-Corasick string matching algorithm has asymptotic worst-time complexity O(n+m) in space O(m).\n"
+		"A practical application of the algorithm is detecting plagiarism. Given source material,\n"
+		" the algorithm can rapidly search through a paper for instances of sentences from the source material,\n"
+		"ignoring details such as case and punctuation.\n"
+		"Because of the abundance of the sought strings, single-string searching algorithms are impractical.\n";
+
+	cout << text << endl << endl;
+
+	cout << "Find Single Pattern" << endl;
+	RabinKarp(text, "Rabin");
+	RabinKarp(text, "Karp");
+	cout << endl;
+
+	unordered_set<string> stringSet;
+	stringSet.insert("Rabin");
+	stringSet.insert("Karp ");
+
+	cout << "Find Mutliple Pattern" << endl;
+	RabinKarp(text, stringSet, 5);
+
+	return 0;
 }
