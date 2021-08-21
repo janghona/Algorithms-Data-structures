@@ -1,70 +1,77 @@
 ﻿#include <iostream>
-#include<stdio.h>
-#include<vector>
-#include<algorithm>
+#include <vector>
+
 using namespace std;
 
-int getParent(int set[], int x) {
-	if (set[x] == x) return x;
-	return set[x] = getParent(set, set[x]);
-}
+const int MAX_V = 100;
+const int INF = 987654321;
 
-void merge(int set[], int a, int b) {
-	a = getParent(set, a);
-	b = getParent(set, b);
-	if (a < b) set[b] = a;
-	else set[a] = b;
-}
+int V = 6;
 
-bool isSameParent(int set[], int a, int b) {
-	a = getParent(set, a);
-	b = getParent(set, b);
-	if (a == b) return true;
-	else return false;
-}
+vector<pair<int, int> > adj[MAX_V];
 
-struct Edge {
-	int node[2];
-	int cost;
+int prim(vector<pair<int, int> > &selected) {
+	selected.clear();
 
-	Edge(int v1, int v2, int cost) {
-		this->node[0] = v1;
-		this->node[1] = v2;
-		this->cost = cost;
-	}
-	bool operator < (const Edge& e1) const {
-		return cost < e1.cost;
-	}
-};
+	vector<bool> added(V, false);
+	vector<int> minWeight(V, INF), parent(V, -1);
 
-int main(){
-	const int n = 7;
-	int m = 11;
-	vector<Edge> e;
+	int ret = 0;
+	minWeight[0] = parent[0] = 0;
+	for (int iter = 0; iter < V; iter++) {
+		int u = -1;
+		for (int v = 0; v < V; v++) {
+			if (!added[v] && (u == -1 || minWeight[u] > minWeight[v]))
+				u = v;
+		}
 
-	e.push_back(Edge(1, 7, 12));
-	e.push_back(Edge(1, 4, 28));
-	e.push_back(Edge(1, 2, 67));
-	e.push_back(Edge(1, 5, 17));
-	e.push_back(Edge(2, 4, 24));
-	e.push_back(Edge(2, 5, 62));
-	e.push_back(Edge(3, 5, 20));
-	e.push_back(Edge(3, 6, 37));
-	e.push_back(Edge(4, 7, 13));
-	e.push_back(Edge(5, 6, 45));
-	e.push_back(Edge(5, 7, 73));
+		if (parent[u] != u)
+			selected.push_back(make_pair(parent[u], u));
 
-	sort(e.begin(), e.end());
+		ret += minWeight[u];
+		added[u] = true;
 
-	int set[n];
-	for (int i = 0; i < n; i++) set[i] = i;
-	int sum = 0;
-	for (int i = 0; i < e.size(); i++) {
-		if (!isSameParent(set,e[i].node[0]-1, e[i].node[1] - 1)){
-			sum += e[i].cost;
-			merge(set, e[i].node[0] - 1, e[i].node[1] - 1);
+		for (int i = 0; i < adj[u].size(); i++) {
+			int v = adj[u][i].first, weight = adj[u][i].second;
+			if (!added[v] && minWeight[v] > weight) {
+				parent[v] = u;
+				minWeight[v] = weight;
+			}
 		}
 	}
+	return ret;
+}
 
-	printf("MST : %d\n", sum);
+int main() {
+	adj[0].push_back(make_pair(1, 5));
+	adj[1].push_back(make_pair(0, 5));
+
+	adj[1].push_back(make_pair(2, 3));
+	adj[2].push_back(make_pair(1, 3));
+
+	adj[2].push_back(make_pair(3, 4));
+	adj[3].push_back(make_pair(2, 4));
+
+	adj[1].push_back(make_pair(4, 3));
+	adj[4].push_back(make_pair(1, 3));
+
+	adj[0].push_back(make_pair(3, 7));
+	adj[3].push_back(make_pair(0, 7));
+
+	adj[2].push_back(make_pair(4, 2));
+	adj[4].push_back(make_pair(2, 2));
+
+	adj[3].push_back(make_pair(5, 1));
+	adj[5].push_back(make_pair(3, 1));
+
+	adj[4].push_back(make_pair(5, 4));
+	adj[5].push_back(make_pair(4, 4));
+
+	vector<pair<int, int> > selected;
+	int mst = prim(selected);
+	printf("mst:%d\n", mst);
+	for (int i = 0; i < selected.size(); i++) {
+		printf("%d-%d\n", selected[i].first, selected[i].second);
+	}
+	printf("\n");
 }
