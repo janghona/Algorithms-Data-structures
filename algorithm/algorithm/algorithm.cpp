@@ -1,46 +1,45 @@
-﻿#include <iostream> 
-#include <string> 
-#include <cstdio> 
-#include <vector> 
-using namespace std; 
-
-vector<int> getPi(string p) {
-	int m = (int)p.size(), j = 0;
-	vector<int> pi(m, 0);
-	for (int i = 1; i < m; i++) {
-		while (j > 0 && p[i] != p[j]) 
-			j = pi[j - 1];
-		if (p[i] == p[j]) 
-			pi[i] = ++j;
-	}
-	return pi;
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int Max(int a, int b)
+{
+	if (a > b)
+		return a;
+	else
+		return b;
 }
-
-vector<int> kmp(string s, string p){ 
-	vector<int> ans; 
-	auto pi = getPi(p); 
-	int n = (int)s.size(), m = (int)p.size(), j =0; 
-	for(int i = 0 ; i < n ; i++){ 
-		while(j>0 && s[i] != p[j]) 
-			j = pi[j-1]; 
-		if(s[i] == p[j]){ 
-			if(j==m-1){ 
-				ans.push_back(i-m+1); 
-				j = pi[j]; 
-			}
-			else j++;  
+// 나쁜 문자를 이용한 보이어-무어 알고리즘
+void BoyerMooreSearch(char *txt, char *pat)
+{
+	int lengTxt = strlen(txt);
+	int lengPat = strlen(pat);
+	int badchar[256] = { -1, }; // 모든 배열을 -1로 초기화한다
+	for (int i = 0; i < lengPat; i++)
+		badchar[(int)pat[i]] = i; // 값을 채운다
+	int s = 0, j; // s는 text에 대한 pattern의 이동값
+	while (s < lengTxt - lengPat)
+	{
+		j = lengPat - 1;
+		while (j >= 0 && txt[s + j] == pat[j])
+			j--; // pattern의 문자와 text가 매칭하면 j를 줄여
+			// 나쁜 문자를 찾는다
+		if (j < 0) // 문자열이 일치하였을 때
+		{
+			printf("문자열이 검색된 index : %d\n", s);
+			s += (s < lengTxt - lengPat) ? lengPat - badchar[(int)txt[s + lengPat]] : 1;
 		}
-	} 
-	return ans; 
-} 
-int main(){ 
-	string s, p; 
-	getline(cin, s);
-	getline(cin, p); 
-	auto matched = kmp(s,p);
-	printf("%d\n", (int)matched.size()); 
-	for(auto i : matched) 
-		printf("%d ", i+1); 
+		else
+		{
+			s += Max(1, j - badchar[(int)txt[s + j]]);
+		}
+	}
+}
+int main(void)
+{
+	char txt[] = "GCTTCTGCTACCTTTTGCGCGCGCGCGGAA";
+	char pat[] = "CCTTTTGC";
+
+	BoyerMooreSearch(txt, pat);
+	
 	return 0;
 }
-
