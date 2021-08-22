@@ -1,45 +1,38 @@
 ﻿#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-int Max(int a, int b)
-{
-	if (a > b)
-		return a;
-	else
-		return b;
-}
-// 나쁜 문자를 이용한 보이어-무어 알고리즘
-void BoyerMooreSearch(char *txt, char *pat)
-{
-	int lengTxt = strlen(txt);
-	int lengPat = strlen(pat);
-	int badchar[256] = { -1, }; // 모든 배열을 -1로 초기화한다
-	for (int i = 0; i < lengPat; i++)
-		badchar[(int)pat[i]] = i; // 값을 채운다
-	int s = 0, j; // s는 text에 대한 pattern의 이동값
-	while (s < lengTxt - lengPat)
+
+void selectionSort(int* list, const int n){
+	int i, j, indexMin, temp;
+
+	for (i = 0; i < n - 1; i++)
 	{
-		j = lengPat - 1;
-		while (j >= 0 && txt[s + j] == pat[j])
-			j--; // pattern의 문자와 text가 매칭하면 j를 줄여
-			// 나쁜 문자를 찾는다
-		if (j < 0) // 문자열이 일치하였을 때
+		indexMin = i;
+		for (j = i + 1; j < n; j++)
 		{
-			printf("문자열이 검색된 index : %d\n", s);
-			s += (s < lengTxt - lengPat) ? lengPat - badchar[(int)txt[s + lengPat]] : 1;
+			if (list[j] < list[indexMin])
+			{
+				indexMin = j;
+			}
 		}
-		else
-		{
-			s += Max(1, j - badchar[(int)txt[s + j]]);
-		}
+		temp = list[indexMin];
+		list[indexMin] = list[i];
+		list[i] = temp;
 	}
 }
-int main(void)
-{
-	char txt[] = "GCTTCTGCTACCTTTTGCGCGCGCGCGGAA";
-	char pat[] = "CCTTTTGC";
+int main(){
+	int list[] = { 5,8,6,4,1,3,2,7,10,9 };
 
-	BoyerMooreSearch(txt, pat);
-	
+	printf("정렬 전 : ");
+	for (int i = 0; i < sizeof(list) / 4; i++) {
+		printf("%d ", list[i]);
+	}
+	printf("\n");
+	printf("정렬 후 : ");
+	selectionSort(list,sizeof(list)/4);
+	for (int i = 0; i < sizeof(list) / 4; i++) {
+		printf("%d ",list[i]);
+	}
+
 	return 0;
 }
