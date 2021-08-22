@@ -2,22 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-void selectionSort(int* list, const int n){
-	int i, j, indexMin, temp;
+void bubbleSort(int* list, const int n){
+	int i, j, temp;
 
-	for (i = 0; i < n - 1; i++)
-	{
-		indexMin = i;
-		for (j = i + 1; j < n; j++)
-		{
-			if (list[j] < list[indexMin])
-			{
-				indexMin = j;
+	for (i = n-1; i > 0; i--){
+		for (j = 0; j < i; j++){
+			if (list[j] > list[j+1]){
+				temp = list[j];
+				list[j] = list[j + 1];
+				list[j + 1] = temp;
 			}
 		}
-		temp = list[indexMin];
-		list[indexMin] = list[i];
-		list[i] = temp;
 	}
 }
 int main(){
@@ -29,7 +24,7 @@ int main(){
 	}
 	printf("\n");
 	printf("정렬 후 : ");
-	selectionSort(list,sizeof(list)/4);
+	bubbleSort(list,sizeof(list)/4);
 	for (int i = 0; i < sizeof(list) / 4; i++) {
 		printf("%d ",list[i]);
 	}
