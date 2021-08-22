@@ -2,24 +2,29 @@
 #include <stdlib.h>
 #include <string.h>
 
-void mergeSort(int A[], int low, int high, int B[]){
-	if (low >= high) return;
-	int mid = (low + high) / 2;
-
-	mergeSort(A, low, mid, B);
-	mergeSort(A, mid + 1, high, B);
-	int i = low, j = mid + 1, k = low;
-	for (; k <= high; ++k) {
-		if (j > high) B[k] = A[i++];
-		else if (i > mid) B[k] = A[j++];
-		else if (A[i] <= A[j]) B[k] = A[i++];
-		else B[k] = A[j++];
-	}
-	for (i = low; i <= high; ++i) A[i] = B[i];
+inline void swap(int &a, int &b) {
+	int t = a; a = b; b = t;
 }
+
+void quickSort(int A[], int low, int high) {
+	if (low >= high) return; // base condition
+
+	// divide process
+	int i = low, j = low;
+	int& pivot = A[high];
+	for (; j < high; ++j) {
+		if (A[j] < pivot)
+			swap(A[i++], A[j]);
+	}
+	swap(A[i], pivot);
+
+	// conquer process
+	quickSort(A, low, i - 1);
+	quickSort(A, i + 1, high);
+}
+
 int main(){
 	int list[] = { 5,8,6,4,1,3,2,7,10,9 };
-	int B[sizeof(list)/4];
 
 	printf("정렬 전 : ");
 	for (int i = 0; i < sizeof(list) / 4; i++) {
@@ -27,7 +32,7 @@ int main(){
 	}
 	printf("\n");
 	printf("정렬 후 : ");
-	mergeSort(list,0,(sizeof(list)/4)-1,B);
+	quickSort(list,0,(sizeof(list)/4-1));
 	for (int i = 0; i < sizeof(list) / 4; i++) {
 		printf("%d ",list[i]);
 	}
