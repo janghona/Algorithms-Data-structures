@@ -1,113 +1,93 @@
-﻿#include <iostream> 
-#include <string> 
-#include <queue> 
-#include <unordered_map> 
-using namespace std; 
+﻿// 프림알고리즘(Prim's algorithm)
 
-struct Node {
-	char character; 
-	int frequency;
-	Node *left, *right;
-}; 
-// 우선순위 큐 정렬을 위한 구조체 
-// 빈도수를 기준으로 최소힙으로 정렬한다.
- struct cmp {
- bool operator()(Node* A, Node* B) { 
- return A->frequency > B->frequency;
- }
-}; 
-class HuffmanTree { 
-private:
-	Node* root = nullptr;
-	unordered_map<char, int> um;
-	unordered_map<char, string> info;
-	priority_queue<Node*, vector<Node*>, cmp> pq;
-public:
-	~HuffmanTree(){ 
-	ReleaseTree(root); 
-	root = nullptr; 
-	um.clear(); info.clear(); 
-	while (!pq.empty()) pq.pop(); 
-	} 
+#include <iostream>
+using namespace std;
 
-	const unordered_map<char, string>& GetInfo() { 
-		// 허프만 트리로 얻은 알파벳 별 이진수 정보를 가져온다. 
-	return info; 
-} 
-// 압축할 문자열 정보를 바탕으로 허프만 트리를 만들어 
-// 이진수 정보들을 만든다. 
-	void Create(const string& str) {
-		// 해쉬 테이블을 이용해 빈도수를 기록 
-		for (const auto iter : str) ++um[iter]; 
-		for (const auto iter : um) {
-			// 해쉬 테이블에서 하나씩 꺼내
-			// 정보를 노드에 저장 후
-			// 우선순위 큐에 집어 넣는다.
-			Node* newNode = new Node; 
-			newNode->left = nullptr;
-			newNode->right = nullptr;
-			newNode->character = iter.first;
-			newNode->frequency = iter.second;
-			pq.push(newNode); 
-		}
-		// 우선순위 큐 정보를 바탕으로 트리를 만든다. 
-		MakeTree();
-		// 트리를 순회하면서 이진수 정보를 입력받는다. 
-string tmp = ""; 
-FindTree(root, tmp); 
-} 
+#define marked 		-1 		// 방문여부 확인, 싸이클이 형성 방지용
+#define NODE_NUM	7 		// 노드(정점)의 수
+#define INF 		9999	// 무한대
 
-private: 
-	void MakeTree() { 
-	// 우선 순위 큐를 이용해 빈도수가 작은 순으로 
-	// 2개씩 꺼내 두 노드를 담는 노드를 만들어
-	// 두 노드의 빈도수를 합치고 큐에 다시 집어 넣는다. 
-	int limit = pq.size() - 1; 
-	for (int i = 0; i < limit; ++i) { 
-		Node* newNode = new Node;
-		newNode->character = 0;
-		newNode->right = pq.top(); 
-		pq.pop(); 
-		newNode->left = pq.top(); 
-		pq.pop(); 
-		newNode->frequency = newNode->right->frequency + newNode->left->frequency; 
-		pq.push(newNode); 
-	} 
-	// 이 작업을 마치면 우선순위 큐에는 한가지 원소만 남는다. 
-	// 그것이 허프만 트리의 Root 노드가 된다. 
-	root = pq.top(); 
+int primData[NODE_NUM][NODE_NUM] =
+{
+	{ 0, 14, 22, 21, INF, INF, INF},
+	{ 14, 0, 43, INF, INF, INF, 47},
+	{ 22, 43, 0, INF, 31, INF, INF},
+	{ 21, INF, INF, 0, 50, 55, INF},
+	{ INF, INF, 31, 50, 0, INF, 15},
+	{ INF, INF, INF, 55, INF, 0, 24},
+	{ INF, 47, INF, INF, 15, 24, 0 }
+}; // 인접 행렬
+
+void PRIM(int n, int distance[NODE_NUM][NODE_NUM]);// 함수의 정의 변경
+
+
+int main()
+{
+	// 아래의 수험번호, 성명 수정하여 입력해야 함
+	//system("mode con cols=80 lines=30 | title KOCCA [Problem 2]");
+	cout << "■ [문제2] 모범답안 \n■ 수험번호: 213123000002 \n■ 성    명: 나장호\n";
+	cout << "\n■  Prim Algrithm ■ \n";
+
+	cout << "==Prim's algorithm MST(Minimum Spanning Tree)==" << endl;
+	PRIM(NODE_NUM, primData);
+
+	//scanf_s("%d");
 }
-void FindTree(Node* p, string str) { 
-	if (p == nullptr) return; 
-	// 왼쪽은 0, 오른쪽은 1 
-	// 순회하면서 정보를 더해간다. 
-	FindTree(p->left, str + '0'); 
-	FindTree(p->right, str + '1'); 
-	// 알파벳 정보를 가진 노드를 만날때까지 순회한다. 
-	if (p->character != 0) { info[p->character] = str; }
-} 
-void ReleaseTree(Node* p) {
-	// 후위 순화를 하면서 동적할당 했던 노드들을 
-	// 할당 해제 시켜준다. 
-if (p == nullptr) return;
-ReleaseTree(p->left);
-ReleaseTree(p->right); 
-delete p;
-p = nullptr; 
-} 
-};
-int main() {
-	string str = "AAAAAAABBCCCDEEEEFFFFFFG";
-	HuffmanTree t; 
-	t.Create(str); 
-	unordered_map<char, string> info = t.GetInfo(); 
-	cout << "압축할 문자열 : " << str << "\n\n"; 
-	cout << "이진수 정보 : \n"; 
-	for (const auto iter : info) { 
-		cout << iter.first << ": " << iter.second << endl; 
+
+
+void PRIM(int n, int distance[NODE_NUM][NODE_NUM])
+{
+	int nNodeNum, nCheckPrimNode, nCheckCycleNdoe, nCntPrimNode, primNode[NODE_NUM];
+	int nMinDist[NODE_NUM], nNewMin;
+	int nSumWeight = 0;
+
+	for (nNodeNum = 1; nNodeNum < n; nNodeNum++) {
+		nMinDist[nNodeNum] = distance[0][nNodeNum]; 	// 시작점
+		primNode[nNodeNum] = 0; 						//시작 초기값 0번째 정점
 	}
-	cout << "\n압축된 정보: "; 
-	for (const auto iter : str) { 
-		cout << info[iter] << ' '; 
-	} 
+
+	for (nNodeNum = 1; nNodeNum < n; nNodeNum++) {
+		nCntPrimNode = 1; 								// 가장 가까운 노드(정점) 값 1
+		nNewMin = nMinDist[1];
+
+		for (nCheckPrimNode = 2; nCheckPrimNode < n; nCheckPrimNode++)
+			if (nMinDist[nCheckPrimNode] < nNewMin) {
+				nNewMin = nMinDist[nCheckPrimNode];
+				//* ★
+				// 가중치가 작은값이 있을 때 그 값으로 갱신하는 코드 작성
+				// ★코드 작성  // 문제 2-1) 10점
+				//*/
+				nCntPrimNode = nCheckPrimNode; 			// 해당 정점노드를 프림연결노드(정점)로 갱신
+
+			}
+
+		cout << nCntPrimNode << " 번 노드의 가중치(edge):" << " ";
+		cout << nNewMin; 								// 가중치 = 최소비용 = 최단거리 = 최소시간
+		cout << "\n";
+
+		nSumWeight = nSumWeight + nNewMin; 				// 가중치 합계
+
+		primNode[nCntPrimNode] = marked;				//방문하면 -1로 처리, 싸이클이 형성되지 않게 하기위해서
+		nMinDist[nCntPrimNode] = INF; 					//초기값으로 가중치 무한대값 9999 대입
+
+		for (nCheckCycleNdoe = 1; nCheckCycleNdoe < n; nCheckCycleNdoe++) {
+
+			//* ★
+			// 인접한 노드 중에서 사이클이 형성되지 않도록 빈곳을 완성하시오.
+			if ((primNode[nCheckCycleNdoe] != marked) && (nMinDist[nCheckCycleNdoe] > distance[nCntPrimNode][nCheckCycleNdoe])
+				// &&
+				// ( ★ 여기에 조건 코드 작성 // 문제 2-2) 5점  )
+				)
+			{
+				nMinDist[nCheckCycleNdoe] = distance[nCntPrimNode][nCheckCycleNdoe];
+				// 최소값으로 가중치 갱신하는 코드 작성하시오.
+				//
+				// ★여기에 코드 작성 // 문제 2-3) 5점
+				//
+				primNode[nCheckCycleNdoe] = nCntPrimNode;							// 최소값을 가진 가중치의 정점(노드)
+			}
+		}
+	}
+	cout << "\n 가중치 합= " << nSumWeight;
 }
+
